@@ -1,0 +1,147 @@
+import 'package:flutter/material.dart';
+import 'package:on_audio_query/on_audio_query.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+void main() {
+  runApp(MaterialApp(home: Mpanda(), debugShowCheckedModeBanner: false));
+}
+
+class Mpanda extends StatefulWidget {
+  const Mpanda({super.key});
+
+  @override
+  State<Mpanda> createState() => _MpandaState();
+}
+
+class _MpandaState extends State<Mpanda> {
+  final OnAudioQuery _audioQuery = OnAudioQuery();
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  List<SongModel> songs = [];
+  int currentsong;
+  bool isPlaying = false;
+
+  @override
+  void initState() {
+    super.initState();
+    requestPermissionAndLoadSongs();
+
+    // Listen to playback state
+    _audioPlayer.playerStateStream.listen((state) {
+      setState(() {
+        isPlaying = state.playing;
+      });
+    });
+  }
+
+  Future<void> requestPermissionAndLoadSongs() async {
+    final status = await Permission.audio.request();
+
+    if (status.isGranted) {
+      List<SongModel> fetchedSongs = await _audioQuery.querySongs();
+      setState(() {
+        songs = fetchedSongs;
+      });
+    } else if (status.isPermanentlyDenied) {
+      openAppSettings();
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Permission denied")));
+    }
+  }
+
+  Future<void> playOrPause(SongModel song) async {
+    try {
+      if (currentSong?.id == song.id && isPlaying) {
+        await _audioPlayer.pause(); // Pause if already playing
+      } else {
+        await _audioPlayer.setAudioSource(
+          AudioSource.uri(Uri.parse(song.uri!)),
+        );
+        await _audioPlayer.play();
+        setState(() {
+          currentSong = song;
+        });
+      }
+    } catch (e) {
+      print("Error playing song: $e");
+    }
+  }
+
+  Future<void> stopPlaying() async {
+    await _audioPlayer.stop();
+    setState(() {
+      isPlaying = false;
+      currentSong = null;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: [
+          Expanded(
+            child: songs.isEmpty
+                ? Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    itemCount: songs.length,
+                    itemBuilder: (context, index) {
+                      final song = songs[index];
+                      return ListTile(
+                        onTap: () => playOrPause(song),
+                        leading: QueryArtworkWidget(
+                          id: song.id,
+                          type: ArtworkType.AUDIO,
+                          artworkHeight: 50,
+                          artworkWidth: 50,
+                          artworkBorder: BorderRadius.circular(10),
+                          nullArtworkWidget: Icon(Icons.music_note, size: 40),
+                        ),
+                        title: Text(
+                          song.title,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(song.artist ?? "dj panda"),
+                        trailing: Icon(
+                          (currentSong?.id == song.id && isPlaying)
+                              ? Icons.pause
+                              : Icons.play_arrow,
+                        ),
+                      );
+                    },
+                  ),
+          ),
+
+          // Now Playing Bar
+          if (currentSong != null)
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              color: Colors.grey[200],
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      currentSong!.title,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
+                    onPressed: () => playOrPause(currentSong!),
+                  ),
+                  IconButton(icon: Icon(Icons.stop), onPressed: stopPlaying),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
