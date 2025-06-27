@@ -22,6 +22,7 @@ class _djpandaState extends State<djpanda> {
   IconData butt = Icons.music_note;
   List<SongModel> songs = [];
   var currentsong;
+  bool visbigd = false;
   bool nowplaying = false;
 
   void initState() {
@@ -97,20 +98,16 @@ class _djpandaState extends State<djpanda> {
 
                         return GestureDetector(
                           onTap: () async {
+                            setState(() {
+                              currentsong = song;
+                              nowplaying = true;
+
+                              icons(true);
+                            });
                             await audiokit.setAudioSource(
                               AudioSource.uri(Uri.parse(song.uri!)),
                             );
-                            // nowplaying = true;
-                            // icons(true);
                             await audiokit.play();
-                            nowplaying = true;
-
-                            setState(() {
-                              currentsong = song;
-                              print(currentsong);
-                              print(currentsong.id);
-                              icons(true);
-                            });
                           },
                           child: ListTile(
                             title: Text(song.title),
@@ -133,73 +130,114 @@ class _djpandaState extends State<djpanda> {
                       },
                     ),
                   ),
+                  Visibility(
+                    visible: visbigd,
+                    child: Flexible(
+                      flex: 35,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            visbigd = false;
+                          });
+                        },
+                        child: Container(
+                          height: 1000,
+                          decoration: BoxDecoration(
+                            color: const Color.fromARGB(72, 34, 150, 222),
+                            borderRadius: BorderRadiusDirectional.circular(30),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
                   if (currentsong != null && currentsong.id != '')
-                    Flexible(
-                      flex: 1,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 250, 224, 224),
-                          borderRadius: BorderRadius.circular(26),
-                        ),
-                        padding: EdgeInsets.only(
-                          top: 3,
-                          bottom: 0,
-                          left: 10,
-                          right: 10,
-                        ),
-                        child: Column(
-                          children: [
-                            StreamBuilder<Duration>(
-                              stream: audiokit.positionStream,
-                              builder: (context, snapshot) {
-                                var position = snapshot.data ?? Duration.zero;
-                                var duration =
-                                    audiokit.duration ?? Duration.zero;
-                                return FractionallySizedBox(
-                                  widthFactor: 0.65,
-                                  child: LinearProgressIndicator(
-                                    borderRadius: BorderRadius.circular(40),
-                                    value:
-                                        duration.inMilliseconds.toDouble() == 0
-                                        ? 0
-                                        : position.inMilliseconds.toDouble() /
-                                              duration.inMilliseconds
-                                                  .toDouble(),
-                                  ),
-                                );
-                              },
+                    Visibility(
+                      visible: !visbigd,
+                      child: Flexible(
+                        flex: 1,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              visbigd = true;
+                            });
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(207, 250, 204, 204),
+
+                              borderRadius: BorderRadius.circular(26),
                             ),
-                            SizedBox(height: 3),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            padding: EdgeInsets.only(
+                              top: 3,
+                              bottom: 0,
+                              left: 10,
+                              right: 10,
+                            ),
+                            child: Column(
                               children: [
-                                QueryArtworkWidget(
-                                  artworkBlendMode: BlendMode.color,
-                                  artworkBorder: BorderRadius.circular(14),
-                                  id: currentsong.id,
-                                  type: ArtworkType.AUDIO,
-                                  artworkHeight: 60,
-                                  artworkWidth: 80,
-                                ),
-                                SizedBox(width: 15),
-                                Flexible(
-                                  child: Text(
-                                    currentsong.title,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Lexm',
-                                    ),
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () {
-                                    playorpause(currentsong);
+                                StreamBuilder<Duration>(
+                                  stream: audiokit.positionStream,
+                                  builder: (context, snapshot) {
+                                    var position =
+                                        snapshot.data ?? Duration.zero;
+                                    var duration =
+                                        audiokit.duration ?? Duration.zero;
+                                    return FractionallySizedBox(
+                                      widthFactor: 0.89,
+                                      child: LinearProgressIndicator(
+                                        borderRadius: BorderRadius.circular(40),
+                                        value:
+                                            duration.inMilliseconds
+                                                    .toDouble() ==
+                                                0
+                                            ? 0
+                                            : position.inMilliseconds
+                                                      .toDouble() /
+                                                  duration.inMilliseconds
+                                                      .toDouble(),
+                                      ),
+                                    );
                                   },
-                                  icon: Icon(butt),
+                                ),
+                                SizedBox(height: 3),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    ClipRect(
+                                      child: QueryArtworkWidget(
+                                        artworkBlendMode: BlendMode.color,
+                                        artworkBorder: BorderRadius.circular(
+                                          14,
+                                        ),
+                                        id: currentsong.id,
+                                        type: ArtworkType.AUDIO,
+                                        artworkHeight: 60,
+                                        artworkWidth: 80,
+                                      ),
+                                    ),
+                                    SizedBox(width: 15),
+                                    Flexible(
+                                      child: Text(
+                                        currentsong.title,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'Lexm',
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        playorpause(currentsong);
+                                      },
+                                      icon: Icon(butt),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
