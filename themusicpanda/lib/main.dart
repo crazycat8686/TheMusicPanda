@@ -130,26 +130,61 @@ class _djpandaState extends State<djpanda> {
                       },
                     ),
                   ),
-                  Visibility(
-                    visible: visbigd,
-                    child: Flexible(
-                      flex: 35,
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            visbigd = false;
-                          });
-                        },
-                        child: Container(
-                          height: 1000,
-                          decoration: BoxDecoration(
-                            color: const Color.fromARGB(72, 34, 150, 222),
-                            borderRadius: BorderRadiusDirectional.circular(30),
+                  if (currentsong != null && currentsong.id != '')
+                    Visibility(
+                      visible: visbigd,
+                      child: Flexible(
+                        flex: 35,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              visbigd = false;
+                            });
+                          },
+                          child: Container(
+                            height: 1000,
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(72, 34, 150, 222),
+                              borderRadius: BorderRadiusDirectional.circular(
+                                30,
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  textAlign: TextAlign.center,
+                                  currentsong.title,
+                                  style: TextStyle(
+                                    fontFamily: 'Lexb',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 22,
+                                  ),
+                                ),
+                                Text(
+                                  textAlign: TextAlign.center,
+                                  currentsong.artist,
+                                  style: TextStyle(
+                                    fontFamily: 'Lexr',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                Spacer(),
+                                Container(
+                                  child: QueryArtworkWidget(
+                                    id: currentsong.id,
+                                    type: ArtworkType.AUDIO,
+                                    artworkHeight: 300,
+                                    artworkWidth: 300,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
 
                   if (currentsong != null && currentsong.id != '')
                     Visibility(
