@@ -15,19 +15,16 @@ class djpanda extends StatefulWidget {
 }
 
 class _djpandaState extends State<djpanda> {
-  bool nowplaying = false;
   final OnAudioQuery audiofetcher = OnAudioQuery();
   final AudioPlayer audiokit = AudioPlayer();
   IconData butt = Icons.music_note;
   List<SongModel> songs = [];
   var currentsong;
+  bool nowplaying = false;
+
   void initState() {
     super.initState();
-    print(currentsong);
     permandget();
-    print("fuxxcccc${nowplaying}");
-
-    icons();
   }
 
   Future<void> permandget() async {
@@ -42,19 +39,41 @@ class _djpandaState extends State<djpanda> {
     }
   }
 
-  void playorpause(SongModel song) async {
-    await audiokit.setAudioSource(AudioSource.uri(Uri.parse(song.uri!)));
-    await audiokit.play();
-  }
-
-  void icons() {
-    setState(() {
+  Future<void> playorpause(SongModel song) async {
+    setState(() async {
       if (nowplaying) {
-        butt = Icons.pause;
+        print("condition1");
+        print("condition1");
+        print("condition1");
+
+        audiokit.pause();
+        nowplaying = false;
+
+        setState(() {
+          icons(false);
+        });
+        print(nowplaying);
       } else {
-        butt = Icons.play_arrow_rounded;
+        print("condition2");
+        print("condition2");
+        print("condition2");
+        audiokit.play();
+        nowplaying = true;
+
+        setState(() {
+          icons(true);
+        });
+        print(nowplaying);
       }
     });
+  }
+
+  Future<void> icons(bool r) async {
+    if (r) {
+      butt = Icons.pause;
+    } else {
+      butt = Icons.play_arrow_rounded;
+    }
   }
 
   @override
@@ -74,18 +93,20 @@ class _djpandaState extends State<djpanda> {
                         var song = songs[i];
 
                         return GestureDetector(
-                          onDoubleTap: () {
-                            setState(() {
-                              nowplaying = false;
-                              audiokit.pause();
-                            });
-                          },
-                          onTap: () {
-                            currentsong = song;
-                            setState(() {
-                              nowplaying = true;
+                          onTap: () async {
+                            await audiokit.setAudioSource(
+                              AudioSource.uri(Uri.parse(song.uri!)),
+                            );
+                            // nowplaying = true;
+                            // icons(true);
+                            await audiokit.play();
+                            nowplaying = true;
 
-                              playorpause(song);
+                            setState(() {
+                              currentsong = song;
+                              print(currentsong);
+                              print(currentsong.id);
+                              icons(true);
                             });
                           },
                           child: ListTile(
@@ -143,9 +164,7 @@ class _djpandaState extends State<djpanda> {
                             ),
                             IconButton(
                               onPressed: () {
-                                setState(() {
-                                  playorpause(currentsong);
-                                });
+                                playorpause(currentsong);
                               },
                               icon: Icon(butt),
                             ),
