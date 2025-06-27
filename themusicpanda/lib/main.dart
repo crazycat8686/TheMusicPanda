@@ -15,14 +15,19 @@ class djpanda extends StatefulWidget {
 }
 
 class _djpandaState extends State<djpanda> {
+  bool nowplaying = false;
   final OnAudioQuery audiofetcher = OnAudioQuery();
   final AudioPlayer audiokit = AudioPlayer();
+  IconData butt = Icons.music_note;
   List<SongModel> songs = [];
   var currentsong;
   void initState() {
     super.initState();
     print(currentsong);
     permandget();
+    print("fuxxcccc${nowplaying}");
+
+    icons();
   }
 
   Future<void> permandget() async {
@@ -40,6 +45,16 @@ class _djpandaState extends State<djpanda> {
   void playorpause(SongModel song) async {
     await audiokit.setAudioSource(AudioSource.uri(Uri.parse(song.uri!)));
     await audiokit.play();
+  }
+
+  void icons() {
+    setState(() {
+      if (nowplaying) {
+        butt = Icons.pause;
+      } else {
+        butt = Icons.play_arrow_rounded;
+      }
+    });
   }
 
   @override
@@ -60,13 +75,16 @@ class _djpandaState extends State<djpanda> {
 
                         return GestureDetector(
                           onDoubleTap: () {
-                            setState(() async {
+                            setState(() {
+                              nowplaying = false;
                               audiokit.pause();
                             });
                           },
                           onTap: () {
                             currentsong = song;
                             setState(() {
+                              nowplaying = true;
+
                               playorpause(song);
                             });
                           },
@@ -91,7 +109,7 @@ class _djpandaState extends State<djpanda> {
                       },
                     ),
                   ),
-                  if (currentsong.id != null && currentsong.id != '')
+                  if (currentsong != null && currentsong.id != '')
                     Flexible(
                       flex: 1,
                       child: Container(
@@ -113,12 +131,23 @@ class _djpandaState extends State<djpanda> {
                               artworkHeight: double.infinity,
                               artworkWidth: 80,
                             ),
-                            Text(
-                              currentsong.title,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Lexb',
+                            SizedBox(width: 15),
+                            Flexible(
+                              child: Text(
+                                currentsong.title,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Lexm',
+                                ),
                               ),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  playorpause(currentsong);
+                                });
+                              },
+                              icon: Icon(butt),
                             ),
                           ],
                         ),
