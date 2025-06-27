@@ -21,6 +21,7 @@ class _djpandaState extends State<djpanda> {
   var currentsong;
   void initState() {
     super.initState();
+    print(currentsong);
     permandget();
   }
 
@@ -90,38 +91,39 @@ class _djpandaState extends State<djpanda> {
                       },
                     ),
                   ),
-                  Flexible(
-                    flex: 1,
-                    child: Container(
-                      decoration: BoxDecoration(),
-                      padding: EdgeInsets.only(
-                        top: 10,
-                        bottom: 10,
-                        left: 10,
-                        right: 10,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          QueryArtworkWidget(
-                            artworkBlendMode: BlendMode.color,
-                            artworkBorder: BorderRadius.circular(14),
-                            id: currentsong.id,
-                            type: ArtworkType.AUDIO,
-                            artworkHeight: double.infinity,
-                            artworkWidth: 80,
-                          ),
-                          Text(
-                            currentsong.title,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Lexend',
+                  if (currentsong.id != null && currentsong.id != '')
+                    Flexible(
+                      flex: 1,
+                      child: Container(
+                        decoration: BoxDecoration(),
+                        padding: EdgeInsets.only(
+                          top: 10,
+                          bottom: 10,
+                          left: 10,
+                          right: 10,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            QueryArtworkWidget(
+                              artworkBlendMode: BlendMode.color,
+                              artworkBorder: BorderRadius.circular(14),
+                              id: currentsong.id,
+                              type: ArtworkType.AUDIO,
+                              artworkHeight: double.infinity,
+                              artworkWidth: 80,
                             ),
-                          ),
-                        ],
+                            Text(
+                              currentsong.title,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Lexb',
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),
