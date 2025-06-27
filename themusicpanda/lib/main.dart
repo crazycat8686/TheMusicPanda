@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:just_audio/just_audio.dart';
@@ -79,6 +81,7 @@ class _djpandaState extends State<djpanda> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: songs.isEmpty
           ? CircularProgressIndicator()
           : Padding(
@@ -86,7 +89,7 @@ class _djpandaState extends State<djpanda> {
               child: Column(
                 children: [
                   Flexible(
-                    flex: 10,
+                    flex: 8,
                     child: ListView.builder(
                       itemCount: songs.length,
                       itemBuilder: (context, i) {
@@ -134,39 +137,67 @@ class _djpandaState extends State<djpanda> {
                     Flexible(
                       flex: 1,
                       child: Container(
-                        decoration: BoxDecoration(),
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 250, 224, 224),
+                          borderRadius: BorderRadius.circular(26),
+                        ),
                         padding: EdgeInsets.only(
-                          top: 10,
-                          bottom: 10,
+                          top: 3,
+                          bottom: 0,
                           left: 10,
                           right: 10,
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        child: Column(
                           children: [
-                            QueryArtworkWidget(
-                              artworkBlendMode: BlendMode.color,
-                              artworkBorder: BorderRadius.circular(14),
-                              id: currentsong.id,
-                              type: ArtworkType.AUDIO,
-                              artworkHeight: double.infinity,
-                              artworkWidth: 80,
-                            ),
-                            SizedBox(width: 15),
-                            Flexible(
-                              child: Text(
-                                currentsong.title,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Lexm',
-                                ),
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                playorpause(currentsong);
+                            StreamBuilder<Duration>(
+                              stream: audiokit.positionStream,
+                              builder: (context, snapshot) {
+                                var position = snapshot.data ?? Duration.zero;
+                                var duration =
+                                    audiokit.duration ?? Duration.zero;
+                                return FractionallySizedBox(
+                                  widthFactor: 0.65,
+                                  child: LinearProgressIndicator(
+                                    borderRadius: BorderRadius.circular(40),
+                                    value:
+                                        duration.inMilliseconds.toDouble() == 0
+                                        ? 0
+                                        : position.inMilliseconds.toDouble() /
+                                              duration.inMilliseconds
+                                                  .toDouble(),
+                                  ),
+                                );
                               },
-                              icon: Icon(butt),
+                            ),
+                            SizedBox(height: 3),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                QueryArtworkWidget(
+                                  artworkBlendMode: BlendMode.color,
+                                  artworkBorder: BorderRadius.circular(14),
+                                  id: currentsong.id,
+                                  type: ArtworkType.AUDIO,
+                                  artworkHeight: 60,
+                                  artworkWidth: 80,
+                                ),
+                                SizedBox(width: 15),
+                                Flexible(
+                                  child: Text(
+                                    currentsong.title,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Lexm',
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    playorpause(currentsong);
+                                  },
+                                  icon: Icon(butt),
+                                ),
+                              ],
                             ),
                           ],
                         ),
