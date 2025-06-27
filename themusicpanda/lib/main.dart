@@ -44,40 +44,86 @@ class _djpandaState extends State<djpanda> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(111222),
       body: songs.isEmpty
           ? CircularProgressIndicator()
-          : ListView.builder(
-              itemCount: songs.length,
-              itemBuilder: (context, i) {
-                var song = songs[i];
+          : Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Column(
+                children: [
+                  Flexible(
+                    flex: 10,
+                    child: ListView.builder(
+                      itemCount: songs.length,
+                      itemBuilder: (context, i) {
+                        var song = songs[i];
 
-                return GestureDetector(
-                  onTap: () {
-                    currentsong = song;
-                    setState(() {
-                      playorpause(song);
-                    });
-                  },
-                  child: ListTile(
-                    title: Text(song.title),
-                    leading: QueryArtworkWidget(
-                      id: song.id,
-                      type: ArtworkType.AUDIO,
-                      artworkBorder: BorderRadius.circular(12),
-                      nullArtworkWidget: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.asset(
-                          'assets/panda.png',
-                          filterQuality: FilterQuality.high,
-                          fit: BoxFit.cover,
-                        ),
+                        return GestureDetector(
+                          onDoubleTap: () {
+                            setState(() async {
+                              audiokit.pause();
+                            });
+                          },
+                          onTap: () {
+                            currentsong = song;
+                            setState(() {
+                              playorpause(song);
+                            });
+                          },
+                          child: ListTile(
+                            title: Text(song.title),
+                            leading: QueryArtworkWidget(
+                              id: song.id,
+                              type: ArtworkType.AUDIO,
+                              artworkBorder: BorderRadius.circular(12),
+                              nullArtworkWidget: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.asset(
+                                  'assets/panda.png',
+                                  filterQuality: FilterQuality.high,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            subtitle: Text(song.artist ?? "Djpanda"),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  Flexible(
+                    flex: 1,
+                    child: Container(
+                      decoration: BoxDecoration(),
+                      padding: EdgeInsets.only(
+                        top: 10,
+                        bottom: 10,
+                        left: 10,
+                        right: 10,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          QueryArtworkWidget(
+                            artworkBlendMode: BlendMode.color,
+                            artworkBorder: BorderRadius.circular(14),
+                            id: currentsong.id,
+                            type: ArtworkType.AUDIO,
+                            artworkHeight: double.infinity,
+                            artworkWidth: 80,
+                          ),
+                          Text(
+                            currentsong.title,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Lexend',
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    subtitle: Text(song.artist ?? "Djpanda"),
                   ),
-                );
-              },
+                ],
+              ),
             ),
     );
   }
