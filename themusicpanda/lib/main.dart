@@ -220,7 +220,7 @@ class _djpandaState extends State<djpanda> {
                                   ),
                                 ),
                                 SizedBox(
-                                  height: 260,
+                                  height: 300,
                                   child: PageView.builder(
                                     controller: PageController(
                                       viewportFraction: 0.6,
@@ -228,7 +228,7 @@ class _djpandaState extends State<djpanda> {
                                     itemCount: songs.length,
                                     onPageChanged: (index) async {
                                       currin = index;
-                                      currentsong = songs[index];
+                                      currentsong = songs[currin];
                                       previn = (index > 0) ? index - 1 : null;
                                       nextin = (index < songs.length - 1)
                                           ? index + 1
@@ -259,16 +259,22 @@ class _djpandaState extends State<djpanda> {
                                           horizontal: 8,
                                           vertical: isCurrent ? 0 : 25,
                                         ),
-                                        height: isCurrent ? 240 : 180,
-                                        width: isCurrent ? 240 : 180,
+                                        height: isCurrent ? 300 : 180,
+                                        width: isCurrent ? 300 : 180,
+
                                         decoration: BoxDecoration(
                                           borderRadius: BorderRadius.circular(
-                                            20,
+                                            50,
                                           ),
                                           boxShadow: [
                                             if (isCurrent)
                                               BoxShadow(
-                                                color: Colors.black26,
+                                                color: const Color.fromARGB(
+                                                  66,
+                                                  234,
+                                                  54,
+                                                  54,
+                                                ),
                                                 blurRadius: 8,
                                                 offset: Offset(0, 6),
                                               ),
