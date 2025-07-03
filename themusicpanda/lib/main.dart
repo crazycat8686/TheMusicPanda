@@ -219,85 +219,8 @@ class _djpandaState extends State<djpanda> {
                                     fontSize: 12,
                                   ),
                                 ),
-                                SizedBox(
-                                  height: 300,
-                                  child: PageView.builder(
-                                    controller: PageController(
-                                      viewportFraction: 0.6,
-                                    ),
-                                    itemCount: songs.length,
-                                    onPageChanged: (index) async {
-                                      currin = index;
-                                      currentsong = songs[currin];
-                                      previn = (index > 0) ? index - 1 : null;
-                                      nextin = (index < songs.length - 1)
-                                          ? index + 1
-                                          : null;
-                                      previoussong = (previn != null)
-                                          ? songs[previn!]
-                                          : null;
-                                      nextsong = (nextin != null)
-                                          ? songs[nextin!]
-                                          : null;
-
-                                      await audiokit.setAudioSource(
-                                        AudioSource.uri(
-                                          Uri.parse(currentsong.uri!),
-                                        ),
-                                      );
-                                      await audiokit.play();
-                                      icons(true);
-                                      setState(() {});
-                                    },
-                                    itemBuilder: (context, index) {
-                                      final isCurrent = index == currin;
-
-                                      return AnimatedContainer(
-                                        duration: Duration(milliseconds: 200),
-                                        curve: Curves.easeOut,
-                                        margin: EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: isCurrent ? 0 : 25,
-                                        ),
-                                        height: isCurrent ? 300 : 180,
-                                        width: isCurrent ? 300 : 180,
-
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            50,
-                                          ),
-                                          boxShadow: [
-                                            if (isCurrent)
-                                              BoxShadow(
-                                                color: const Color.fromARGB(
-                                                  66,
-                                                  234,
-                                                  54,
-                                                  54,
-                                                ),
-                                                blurRadius: 8,
-                                                offset: Offset(0, 6),
-                                              ),
-                                          ],
-                                        ),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            20,
-                                          ),
-                                          child: QueryArtworkWidget(
-                                            id: songs[index].id,
-                                            type: ArtworkType.AUDIO,
-                                            artworkFit: BoxFit.cover,
-                                            nullArtworkWidget: Image.asset(
-                                              'assets/panda.png',
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
+                                for (int i = currin; i < songs.length; i++)
+                                  AnimatedContainer(duration: duration),
                                 StreamBuilder<Duration>(
                                   stream: audiokit.positionStream,
                                   builder: (context, snap) {
