@@ -219,8 +219,100 @@ class _djpandaState extends State<djpanda> {
                                     fontSize: 12,
                                   ),
                                 ),
-                                for (int i = currin; i < songs.length; i++)
-                                  AnimatedContainer(duration: duration),
+                                Flexible(
+                                  child: PageView.builder(
+                                    controller: PageController(initialPage: 1),
+                                    itemCount: 3,
+                                    onPageChanged: (index) async {
+                                      if (index == 0 && previn != null) {
+                                        // Swiped to previous song
+                                        setState(() {
+                                          nextin = currin;
+                                          nextsong = songs[nextin];
+
+                                          currin = previn;
+                                          currentsong = songs[currin];
+
+                                          previn = (currin > 0)
+                                              ? currin - 1
+                                              : null;
+                                          previoussong = (previn != null)
+                                              ? songs[previn!]
+                                              : null;
+                                          icons(true);
+                                        });
+                                      } else if (index == 2 &&
+                                          nextin != null &&
+                                          nextin < songs.length) {
+                                        // Swiped to next song
+                                        setState(() {
+                                          previn = currin;
+                                          previoussong = songs[previn!];
+
+                                          currin = nextin;
+                                          currentsong = songs[currin];
+
+                                          nextin = (currin < songs.length - 1)
+                                              ? currin + 1
+                                              : null;
+                                          nextsong = (nextin != null)
+                                              ? songs[nextin!]
+                                              : null;
+                                          icons(true);
+                                        });
+                                      }
+
+                                      await audiokit.setAudioSource(
+                                        AudioSource.uri(
+                                          Uri.parse(currentsong.uri!),
+                                        ),
+                                      );
+                                      await audiokit.play();
+                                    },
+                                    itemBuilder: (context, index) {
+                                      int? showIndex;
+                                      if (index == 0) {
+                                        showIndex = previn;
+                                      } else if (index == 1) {
+                                        showIndex = currin;
+                                      } else if (index == 2) {
+                                        showIndex = nextin;
+                                      }
+
+                                      if (showIndex == null ||
+                                          showIndex < 0 ||
+                                          showIndex >= songs.length) {
+                                        return Center(child: SizedBox.shrink());
+                                      }
+
+                                      bool isCurrent = showIndex == currin;
+
+                                      return AnimatedContainer(
+                                        duration: Duration(milliseconds: 300),
+                                        curve: Curves.bounceInOut,
+                                        margin: EdgeInsets.symmetric(
+                                          horizontal: isCurrent ? 5 : 10,
+                                        ),
+                                        width: isCurrent ? 250 : 100,
+                                        height: isCurrent ? 250 : 100,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            isCurrent ? 20 : 10,
+                                          ),
+                                        ),
+                                        child: QueryArtworkWidget(
+                                          id: songs[showIndex].id,
+                                          type: ArtworkType.AUDIO,
+                                          artworkFit: BoxFit.cover,
+                                          artworkQuality: FilterQuality.high,
+                                          artworkHeight: isCurrent ? 170 : 70,
+                                          artworkWidth: isCurrent ? 200 : 70,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+
                                 StreamBuilder<Duration>(
                                   stream: audiokit.positionStream,
                                   builder: (context, snap) {
