@@ -217,33 +217,23 @@ class _djpandaState extends State<djpanda> {
                                     fontSize: 12,
                                   ),
                                 ),
-                                PageView.builder(
-                                  itemCount: songs.length,
-                                  itemBuilder: (context, i) {
-                                    {
-                                      return AnimatedContainer(
-                                        duration: Duration(milliseconds: 600),
-                                        height: 400,
-                                        width: 400,
-                                        curve: Curves.bounceInOut,
-                                        margin: EdgeInsets.symmetric(
-                                          horizontal: i == currin ? 8 : 6,
+                                SizedBox(
+                                  height: 300,
+                                  width: 300,
+
+                                  child: Flexible(
+                                    child: ClipRRect(
+                                      child: QueryArtworkWidget(
+                                        artworkBorder: BorderRadius.circular(
+                                          30,
                                         ),
-                                        child: ClipRRect(
-                                          child: QueryArtworkWidget(
-                                            id: songs[i].id,
-                                            type: ArtworkType.AUDIO,
-                                            artworkHeight: i == currin
-                                                ? 150
-                                                : 120,
-                                            artworkWidth: i == currin
-                                                ? 200
-                                                : 150,
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  },
+                                        id: songs[currin].id,
+                                        type: ArtworkType.AUDIO,
+                                        artworkHeight: 100,
+                                        artworkWidth: 100,
+                                      ),
+                                    ),
+                                  ),
                                 ),
 
                                 StreamBuilder<Duration>(
