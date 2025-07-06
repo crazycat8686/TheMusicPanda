@@ -19,6 +19,8 @@ class _djpandaState extends State<djpanda> {
   final AudioPlayer audiokit = AudioPlayer();
   IconData butt = Icons.music_note;
   List<SongModel> songs = [];
+  List<AlbumModel> albums = [];
+
   var previoussong;
   var currentsong;
   var nextsong;
@@ -32,6 +34,7 @@ class _djpandaState extends State<djpanda> {
   void initState() {
     super.initState();
     permandget();
+    albumget();
   }
 
   Future<void> permandget() async {
@@ -46,31 +49,34 @@ class _djpandaState extends State<djpanda> {
     }
   }
 
+  Future<void> albumget() async {
+    final perm = await Permission.audio.request();
+    if (perm.isGranted) {
+      List<AlbumModel> tempalb = await audiofetcher.queryAlbums();
+      setState(() {
+        albums = tempalb;
+      });
+    } else {
+      openAppSettings();
+    }
+  }
+
   Future<void> playorpause(SongModel song) async {
     setState(() async {
       if (nowplaying) {
-        print("condition1");
-        print("condition1");
-        print("condition1");
-
         audiokit.pause();
         nowplaying = false;
 
         setState(() {
           icons(false);
         });
-        print(nowplaying);
       } else {
-        print("condition2");
-        print("condition2");
-        print("condition2");
         audiokit.play();
         nowplaying = true;
 
         setState(() {
           icons(true);
         });
-        print(nowplaying);
       }
     });
   }
@@ -117,6 +123,11 @@ class _djpandaState extends State<djpanda> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        flexibleSpace: Container(
+          child: TextField(decoration: InputDecoration(hintText: 'enter')),
+        ),
+      ),
       backgroundColor: Colors.white,
       body: songs.isEmpty
           ? CircularProgressIndicator()
@@ -124,55 +135,104 @@ class _djpandaState extends State<djpanda> {
               padding: const EdgeInsets.only(top: 10),
               child: Column(
                 children: [
-                  Flexible(
-                    flex: 8,
-                    child: ListView.builder(
-                      itemCount: songs.length,
-                      itemBuilder: (context, i) {
-                        var song = songs[i];
-
-                        return GestureDetector(
-                          onTap: () async {
-                            setState(() {
-                              currentsong = song;
-                              previoussong = (i > 0) ? songs[i - 1] : null;
-                              nextsong = (i < songs.length - 1)
-                                  ? songs[i + 1]
-                                  : null;
-
-                              nowplaying = true;
-                              currin = i;
-                              nextin = (i < songs.length - 1)
-                                  ? currin + 1
-                                  : null;
-                              previn = (i > 0) ? currin - 1 : null;
-
-                              icons(true);
-                            });
-                            await audiokit.setAudioSource(
-                              AudioSource.uri(Uri.parse(song.uri!)),
-                            );
-                            await audiokit.play();
-                          },
-                          child: ListTile(
-                            title: Text(song.title),
-                            leading: QueryArtworkWidget(
-                              id: song.id,
-                              type: ArtworkType.AUDIO,
-                              artworkBorder: BorderRadius.circular(12),
-                              nullArtworkWidget: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.asset(
-                                  'assets/panda.png',
-                                  filterQuality: FilterQuality.high,
-                                  fit: BoxFit.cover,
+                  // if (currentsong == null && currentsong.id == '')
+                  Visibility(
+                    visible: !visbigd,
+                    child: FittedBox(
+                      child: Container(
+                        margin: EdgeInsets.only(top: 40),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              "View ur Albums here",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(height: 40),
+                            SizedBox(
+                              height: 140,
+                              width: 400,
+                              child: PageView.builder(
+                                controller: PageController(
+                                  viewportFraction: 0.7,
                                 ),
+                                itemCount: albums.length,
+                                itemBuilder: (context, i) {
+                                  return AnimatedContainer(
+                                    margin: EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                    ),
+                                    height: 205,
+                                    width: 300,
+                                    duration: Duration(milliseconds: 600),
+                                    curve: Curves.bounceInOut,
+                                    child: QueryArtworkWidget(
+                                      id: albums[i].id,
+                                      type: ArtworkType.ALBUM,
+                                    ),
+                                  );
+                                },
                               ),
                             ),
-                            subtitle: Text(song.artist ?? "Djpanda"),
-                          ),
-                        );
-                      },
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 34,
+                    child: Container(
+                      padding: EdgeInsets.all(10),
+                      child: ListView.builder(
+                        itemCount: songs.length,
+                        itemBuilder: (context, i) {
+                          var song = songs[i];
+
+                          return GestureDetector(
+                            onTap: () async {
+                              setState(() {
+                                currentsong = song;
+                                previoussong = (i > 0) ? songs[i - 1] : null;
+                                nextsong = (i < songs.length - 1)
+                                    ? songs[i + 1]
+                                    : null;
+
+                                nowplaying = true;
+                                currin = i;
+                                nextin = (i < songs.length - 1)
+                                    ? currin + 1
+                                    : null;
+                                previn = (i > 0) ? currin - 1 : null;
+
+                                icons(true);
+                              });
+                              await audiokit.setAudioSource(
+                                AudioSource.uri(Uri.parse(song.uri!)),
+                              );
+                              await audiokit.play();
+                              await audiokit.seekToNext();
+                            },
+                            child: ListTile(
+                              title: Text(song.title),
+                              leading: QueryArtworkWidget(
+                                id: song.id,
+                                type: ArtworkType.AUDIO,
+                                artworkBorder: BorderRadius.circular(12),
+                                nullArtworkWidget: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.asset(
+                                    'assets/panda.png',
+                                    filterQuality: FilterQuality.high,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              subtitle: Text(song.artist ?? "Djpanda"),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
                   if (currentsong != null && currentsong.id != '')
@@ -276,8 +336,8 @@ class _djpandaState extends State<djpanda> {
                   if (currentsong != null && currentsong.id != '')
                     Visibility(
                       visible: !visbigd,
-                      child: Flexible(
-                        flex: 1,
+                      child: Expanded(
+                        flex: 9,
                         child: GestureDetector(
                           onTap: () {
                             setState(() {
@@ -285,19 +345,26 @@ class _djpandaState extends State<djpanda> {
                             });
                           },
                           child: Container(
+                            margin: EdgeInsets.only(
+                              bottom: 4,
+                              left: 5,
+                              right: 5,
+                            ),
+
                             decoration: BoxDecoration(
                               color: const Color.fromARGB(207, 250, 204, 204),
 
-                              borderRadius: BorderRadius.circular(26),
+                              borderRadius: BorderRadius.circular(40),
                             ),
                             padding: EdgeInsets.only(
                               top: 3,
-                              bottom: 0,
+                              bottom: 3,
                               left: 10,
                               right: 10,
                             ),
                             child: Column(
                               children: [
+                                SizedBox(height: 2),
                                 StreamBuilder<Duration>(
                                   stream: audiokit.positionStream,
                                   builder: (context, snapshot) {
@@ -322,7 +389,7 @@ class _djpandaState extends State<djpanda> {
                                     );
                                   },
                                 ),
-                                SizedBox(height: 3),
+                                SizedBox(height: 6),
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -331,7 +398,7 @@ class _djpandaState extends State<djpanda> {
                                       child: QueryArtworkWidget(
                                         artworkBlendMode: BlendMode.color,
                                         artworkBorder: BorderRadius.circular(
-                                          14,
+                                          30,
                                         ),
                                         id: currentsong.id,
                                         type: ArtworkType.AUDIO,
@@ -357,6 +424,7 @@ class _djpandaState extends State<djpanda> {
                                     ),
                                   ],
                                 ),
+                                SizedBox(height: 2.8),
                               ],
                             ),
                           ),
